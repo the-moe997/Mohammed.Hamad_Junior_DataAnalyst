@@ -1,5 +1,5 @@
--- These tables are used to create visualizions using Tableau
--- Covid 19 Dataset https://ourworldindata.org/covid-deaths until 2021-07-17
+-- These tables will be used to create visualizions using Tableau
+-- from the Covid 19 Dataset https://ourworldindata.org/covid-deaths until 2021-07-17
 
 
 
