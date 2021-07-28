@@ -9,6 +9,24 @@
 
 
 
+
+
+-----------------------------------------------------
+-- The total cases and total deaths of Covid 19 worldwide until 2021-07-17
+
+
+
+
+
+select 
+	sum(new_cases) as 'Total Cases', 
+	sum(convert(int,new_deaths)) as 'Total Deaths',
+	sum(convert(int,new_deaths))/sum(new_cases) *100 as 'Death Percentage'
+
+from [portfolio porject]..[NewCovidDeaths$]
+where continent is not null
+
+
 ----------------------------------------------------------------------------------
 -- Total cases and total deaths of Covid 19 of each continent until 2021-07-17
 
@@ -16,58 +34,76 @@
 
 
 
+
 select 
-location,convert(int,total_deaths)as 'Total deaths count '--population,total_cases
+	location,
+	sum(convert(int,new_deaths)) as 'Total Death Count'
+	
 from [portfolio porject]..[NewCovidDeaths$]
-where continent is null and date = '2021-07-17'
-	  and location not in ('world','European Union', 'international')
-order by 2 Desc
-
------------------------------------------------------
--- The total cases and total deaths of Covid 19 worldwide until 2021-07-17
-
-select sum(new_cases) as 'The total cases',sum(convert(int,new_deaths)) as 'the total deaths'
-	  ,(sum(convert(int,new_deaths))/sum(new_cases))*100 as 'Death Percentage'
-From [portfolio porject]..[NewCovidDeaths$]
-where continent is null 
-And	  location = 'world'
+where continent is null and location not in ('European Union','International','world')
+group by location--,population
+order by 2 DESC
 
 
-------or----------
-
-
-select sum(new_cases) as 'The total cases',sum(convert(int,new_deaths)) as 'the total deaths'
-	  ,(sum(convert(int,new_deaths))/sum(new_cases))*100 as 'Death Percentage'
-From [portfolio porject]..[NewCovidDeaths$]
-where continent is not null 
 
 
 ---------------------------------------------------
 -- Daily Covid-19 situation in each country
 
-select cv.continent,cv.location,cv.date,cv.population                
-		,CV.new_cases,cv.new_cases/cv.population*100 as 'total people infected'
-from [portfolio porject]..[NewCovidDeaths$] CV
-join [portfolio porject]..[NewCovidVaccinations] VCC
-	on CV.location = VCC.location
-	AND CV.Date = VCC.Date
- 
---group by 1,2
+
+
+select
+		location,
+		population,
+		date,
+		max(total_cases) as 'Total cases count',
+		max(total_cases/population)*100 as 'percent people infected'
+		
+from [portfolio porject]..[NewCovidDeaths$]
+group by location , population , date
+order by 1, 3
+
+
+
+
+
+
+
 --------------------------------------------------------
---Total people infected + total people vaccinated in each country
+--Total people infected in each country
+
+
+select
+		location,
+		population,
+		date,
+		max(total_cases) as 'Highest Infection count',
+		max(total_cases/population)*100 as 'percent people infected'
+		
+from [portfolio porject]..[NewCovidDeaths$]
+where location not in ('world','North america','European Union','Europe','Asia','africa','south america')
+group by location , population , date
+order by 5 desc
 
 
 
-select cv.location,cv.population               
-      ,CV.total_cases,cv.total_cases/cv.population as 'total people infected'
-from [portfolio porject]..[NewCovidDeaths$] CV
-join [portfolio porject]..[NewCovidVaccinations] VCC
-	on CV.location = VCC.location
-	AND CV.Date = VCC.Date
- where cv.date= '2021-07-17'
-	   and cv.continent is not null
-	   and vcc.total_vaccinations is not null
-order by 3 desc
---group by 1,2
 ---------------------------------------
+--Total people vaccinated in each country
+
+
+
+
+Select 		
+	dea.continent, dea.location, dea.date, dea.population,
+	MAX(vac.total_vaccinations) as 'People Vaccinated',
+	(MAX(vac.total_vaccinations)/dea.population)*100 as 'percent People Vaccinated' 
+from [portfolio porject]..[NewCovidDeaths$] dea
+Join [portfolio porject]..[NewCovidVaccinations] vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null 
+group by dea.continent, dea.location, dea.date, dea.population
+order by 1,2,3
+
+
 
